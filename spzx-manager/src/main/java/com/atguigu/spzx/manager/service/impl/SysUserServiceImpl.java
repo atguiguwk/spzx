@@ -1,12 +1,12 @@
 package com.atguigu.spzx.manager.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.atguigu.spzx.common.exception.GuiguException;
 import com.atguigu.spzx.manager.mapper.SysUserMapper;
 import com.atguigu.spzx.manager.service.SysUserService;
 import com.atguigu.spzx.model.dto.system.LoginDto;
 import com.atguigu.spzx.model.entity.system.SysUser;
-import com.atguigu.spzx.model.entity.user.UserInfo;
 import com.atguigu.spzx.model.vo.common.ResultCodeEnum;
 import com.atguigu.spzx.model.vo.system.LoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,24 @@ public class SysUserServiceImpl implements SysUserService {
     //用户登录
     @Override
     public LoginVo login(LoginDto loginDto) {
+
+        //验证码验证
+        //1. 获取输入验证码和存储到redis的key的名称
+        String key = loginDto.getCodeKey();
+        String captcha = loginDto.getCaptcha();
+
+        //2. 根据获取到的redis里面的key，查询到redis里面的验证码
+        String redisCode = redisTemplate.opsForValue().get("user:validate" + key);
+
+        //3. 比较验证码是否相等
+        if (StrUtil.isEmpty(redisCode) || !StrUtil.equalsIgnoreCase(redisCode,captcha)){
+            throw new GuiguException(ResultCodeEnum.VALIDATECODE_ERROR);
+        }
+
+        //4. 不一致提示用户
+        //5. 一致，删除redis里面的验证码
+        redisTemplate.delete("user:validate" + key);
+
         //1.获取提交用户名
         String userName = loginDto.getUserName();
         //2.根据用户名查询用户表sys_user表
