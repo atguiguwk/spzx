@@ -8,6 +8,7 @@ import com.atguigu.spzx.model.vo.common.Result;
 import com.atguigu.spzx.model.vo.common.ResultCodeEnum;
 import com.atguigu.spzx.model.vo.system.LoginVo;
 import com.atguigu.spzx.model.vo.system.ValidateCodeVo;
+import com.atguigu.spzx.utils.AuthContextUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +42,19 @@ public class IndexController {
 
     //获取用户信息
     @GetMapping(value = "/getUserInfo")
-    public Result getUserInfo(@RequestHeader(name = "token") String token){
-        //1.通过前端获取token
-        //2.通过token去redis里面查找数据
-        SysUser sysUser = sysUserService.getUserInfo(token);
-
-        //3.返回结果
-        return Result.build(sysUser,ResultCodeEnum.SUCCESS);
+    public Result<SysUser> getUserInfo() {
+        return Result.build(AuthContextUtil.get()  , ResultCodeEnum.SUCCESS) ;
     }
+
+//    @GetMapping(value = "/getUserInfo")
+//    public Result getUserInfo(@RequestHeader(name = "token") String token){
+//        //1.通过前端获取token
+//        //2.通过token去redis里面查找数据
+//        SysUser sysUser = sysUserService.getUserInfo(token);
+//
+//        //3.返回结果
+//        return Result.build(sysUser,ResultCodeEnum.SUCCESS);
+//    }
 
     //用户退出
     @GetMapping(value = "/logout")
