@@ -2,6 +2,7 @@ package com.atguigu.spzx.manager.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.atguigu.spzx.common.exception.GuiguException;
 import com.atguigu.spzx.manager.mapper.SysUserMapper;
 import com.atguigu.spzx.manager.service.SysUserService;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.print.attribute.standard.JobName;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -77,5 +79,19 @@ public class SysUserServiceImpl implements SysUserService {
         LoginVo loginVo = new LoginVo();
         loginVo.setToken(token);
         return loginVo;
+    }
+
+    @Override
+    public SysUser getUserInfo(String token) {
+        //1.查找redis里面的信息
+        String userJson = redisTemplate.opsForValue().get("user:login" + token);
+        SysUser sysUser = JSON.parseObject(userJson, SysUser.class);
+        //2.返回结果
+        return sysUser;
+    }
+
+    @Override
+    public void logout(String token) {
+        redisTemplate.delete("user:login" + token);
     }
 }
